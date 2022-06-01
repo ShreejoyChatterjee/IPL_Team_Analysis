@@ -1,0 +1,132 @@
+#@uthor - Shreejoy Chatterjee
+#import libraries
+import pandas as pd
+
+
+#IPL Team Class
+
+team_list = ['CSK','RR',"DC","RCB","SRH","PBKS",'KKR','GT',"LSG","MI"]
+
+
+class IPLinfo():
+    def __init__(self,team_list):
+        self.team_list = team_list
+        self.get_teams_data = self.get_data()
+        self.teams_with_losses = self.get_team_with_consecutive_losses()
+        self.teams_win_data = self.get_teams_win_data()
+        self.filtered_teams = self.filter_teams()
+        
+
+
+    def get_average(self):
+        for i in self.filtered_teams:
+            a = self.get_teams_data[i]
+            win_count = 0
+            for j in a:
+                if j == 'win':
+                    win_count +=1
+
+
+            print("Team Name: ",i,", Average:",win_count/5)
+
+    def get_data(self):
+        team_data = {}
+        for i in team_list:
+            team_data[i] = IplTeam(i).get_team_result()
+
+        return team_data
+
+    def get_team_with_consecutive_losses(self):
+        teams_with_losses = []
+        for i in self.team_list:
+            team_data = self.get_teams_data[i]
+            previous = None
+            for j in team_data:
+                new = j
+                if new == 'loss':
+                    if previous == new:
+                        teams_with_losses.append(i)
+                        break
+
+                previous = new
+
+
+        return teams_with_losses
+
+    def filter_teams(self):
+        filtered_teams = []
+        for i in self.team_list:
+            get_values = self.teams_win_data[i]
+            if get_values['consecutive_wins'] >=1 or get_values['consecutive_loss']>=1:
+                filtered_teams.append(i)
+                
+
+
+        return filtered_teams
+
+
+    
+            
+
+    def get_teams_win_data(self):
+        team_win_data = {}
+        for i in self.team_list:
+            team_history = list(self.get_teams_data[i])
+            win_count = 0
+            loss_count = 0
+            previous =None
+            for j in team_history:
+                new = j
+                if new =='win' and new == previous:
+                    win_count +=1
+
+                elif new=='loss' and new == previous:
+                    loss_count +=1
+
+                previous = new
+
+                
+
+
+            team_win_data[i] = {"consecutive_wins":win_count,"consecutive_loss":loss_count}
+
+        return team_win_data
+
+
+
+class IplTeam():
+    def __init__(self,team_name):
+        self.team_name = team_name
+        self.teams_data_path = 'teams_data.csv' #address to datafile
+        self.team_data = self.get_data()
+        self.team_result = self.get_team_result()
+
+    def get_data(self):
+        return pd.read_csv(self.teams_data_path)
+
+
+    def get_team_result(self):
+        df = self.team_data
+        df = df[df['Team_Name']==self.team_name]
+        values = df.values.tolist()[0]
+        return values[1:]
+
+ipl_info = IPLinfo(team_list)
+
+if __name__ == '__main__':
+    ipl_info = ipl_info = IPLinfo(team_list)
+    #teams with 2 consecutive losses
+    print("Printing teams with consecutive losses:")
+    print(ipl_info.teams_with_losses)
+    print()
+
+    #teams n consecutve wins and losses
+    print("Teams consecutive wins and losses:")
+    print(ipl_info.teams_win_data)
+
+    print("Filtered out team average:")
+    ipl_info.get_average()
+
+
+
+
