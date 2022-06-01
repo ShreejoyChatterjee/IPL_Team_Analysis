@@ -1,1 +1,1 @@
-# IPL_Team_Analysis
+# IPL_Teams_Analysis
